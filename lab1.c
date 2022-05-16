@@ -12,6 +12,10 @@
 
 #define LECTURA 0
 #define ESCRITURA 1
+#define RANGO_INF 0
+#define RANGO_SUP 1
+#define INFINITO 9999999
+#define DECIMAL 0.0001
 
 /*
 //Funcion que lee un archivo y devuelve un listado de todas lo leído en cada linea del archivo
@@ -79,13 +83,13 @@ int main(int argc, char* argv[]){
 	int flagO = 0;
 	int flagD = 0;
 	int flagN = 0;
+    int flagB = 0; //booleano que indica si se activa la bandera -b
 
 //Variables para almacenar lo recibido por teclado
 	char* nombreArchivoEntrada;
 	char* nombreArchivoSalida;
 	char* numeroDiscos;
 	char* ancho;
-	int flag; //booleano que indica si se activa la bandera
 
 	int c;
 
@@ -115,7 +119,7 @@ int main(int argc, char* argv[]){
                 flagN = 1;
                 break;
             case 'b':
-                flag = 1;
+                flagB = 1;
                 break;
             default:
                 printf("Opcion Incorrecta\n");
@@ -133,6 +137,7 @@ int main(int argc, char* argv[]){
     }//fin if flag d,i,n,o
 
     
+printf("la bandera de -b flag es %d\n", flagB);//BORRAR
 
     //se transforman los valos obtenidos del ancho y la cantidad de discos a entero con la funcion atoi
     int anchoDisco = atoi(ancho);
@@ -183,15 +188,21 @@ int main(int argc, char* argv[]){
 
     }//fin while i<cantidadPipes
 
+
+
+
+
+
+
 printf("cantidad de pipes %d\n", cantidadPipes);//borrar
 
 //se comienzan a crear los procesos hijos
 int cantidadProcesosHijos = cantidadDiscos;
 int cantidadProcesosCreados = 0;
-int pid;
+int pid = 1;
 
-//mientras queden procesos hijos por crear
-while(cantidadProcesosCreados < cantidadProcesosHijos){
+//mientras queden procesos hijos por crear 
+while((cantidadProcesosCreados < cantidadProcesosHijos) && (pid > 0)){
 
     //Se crea el proceso hijo
     pid = fork();
@@ -200,10 +211,13 @@ while(cantidadProcesosCreados < cantidadProcesosHijos){
     //Proceso padre
     if(pid > 0){
 
-        printf("Soy el proceso padre y mi pid es %d\n", pid);
+        printf("Soy el proceso padre y mi variable pid es %d y mi pid como padre es %d\n", pid, getpid());//Borrar
 
+        //se cierra la lectura en el pipe que el padre escribe para el proceso hijo correspondiente
+        close(matrizPipes[(cantidadProcesosCreados*2) - 2][LECTURA]);
 
-        
+        //Se cierra la escritura en el pipe que el padre lee lo enviado por el proceso hijo
+        close(matrizPipes[(cantidadProcesosCreados*2) - 1][ESCRITURA]);
 
 
     }//fin if pid > 0
@@ -211,9 +225,14 @@ while(cantidadProcesosCreados < cantidadProcesosHijos){
     //Proceso hijo
     else if(pid == 0){
 
-        printf("soy el proceso hijo y mi variable pid es %d y mi pid es %d\n", pid, getpid());
-        exit(0);
+        printf("soy el proceso hijo y mi variable pid es %d y mi pid es %d\n", pid, getpid());//borrar
 
+        //se cierra la escritura en el pipe que el hijo lee lo enviado por el padre
+        close(matrizPipes[(cantidadProcesosCreados*2) - 2][ESCRITURA]);
+
+        //Se cierra la lectura en el pipe que el hijo le escribe al proceso padre
+        close(matrizPipes[(cantidadProcesosCreados*2) - 1][LECTURA]);
+        
 
     }//fin if pid == 0
 
@@ -227,6 +246,79 @@ while(cantidadProcesosCreados < cantidadProcesosHijos){
 
 
 
+
+
+//Se declara un archivo tipo file donde se manipulará el archivo de entrada
+FILE* archivo;
+
+//Se crea una matriz donde en cada fila iran guardados los valores del rango inferior y superior del disco para enviar
+//las visibilidades leídas a su proceso hijo correspondiente.
+//cabe aclarar que a todo rango superior se le restara una constante de 0.0001 para no tener problemas con los intervalos
+//Por ejemplo, si son 2 discos con un ancho de 200, la matriz tendría los siguientes valores.
+//matrizRango = [[0,199.999], [200,399.999], [400, infinito]];
+float matrizRango[cantidadDiscos][2];
+
+
+//En caso de estar en el proceso padre
+if(pid > 0){
+    //se abre el archivo de entrada en modo lectura para extraer las visibilidades
+    archivo = fopen(nombreArchivoEntrada,"r");
+
+    //Se procede a rellenar la matriz de rangos
+    i = 0;
+    float valorCota = 0.0; //valor para ir rellenando la matriz de rango
+
+    //mientras se rellena la matriz
+    while(i < cantidadDiscos){
+
+        
+
+        //Se ponen los valores de las cotas para los intervalos en la matriz de rangos
+        matrizRango[i][RANGO_INF] = valorCota;
+
+        //se suma el ancho para ponerlo en el rango o cota superior del intervalo
+        //restandole el decimal constante 0.0001
+
+        valorCota = (valorCota + anchoDisco) - DECIMAL;
+
+        //se pone el valor en el rango superior
+        matrizRango[i][RANGO_SUP] = valorCota;
+
+        //Se le vuelve a sumar el decimal restado al valor para ponerlo de cota o rango inferior en la siguiente posicion o "intervalo"
+        valorCota = valorCota + DECIMAL;
+
+        //En caso de encontrarme en la ultima posición, se cambia el valor del rango superior por INFINITO
+        if(i == cantidadDiscos-1){
+            matrizRango[i][RANGO_SUP] = INFINITO;
+        }
+        
+        //BORRAR ESTOS PRINT
+        printf("dentro del while de la matriz rango, i = %d, valorCota = %f, matrizRango[%d][RANGO_INF] = %f, matrizRango[%d][RANGO_SUP] = %f\n",i,valorCota,i,matrizRango[i][RANGO_INF],i,matrizRango[i][RANGO_SUP]);
+        printf("LA SUMA DE 200 - 0.0000001 ES %f\n",200.0 - 0.000001);
+        i = i+1;
+
+    }//finn while
+}//fin if proceso padre
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//En caso de estar en el proceso padre
+if(pid > 0){
+
+    //se cierra el archivo de entrada
+    fclose(archivo);
+}
 
 
 
