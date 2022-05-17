@@ -245,9 +245,37 @@ if(pid > 0){
     }//finn while
 }//fin if proceso padre
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //arreglo de caracteres donde se leerá la linea del archivo de entrada junto con su copia para poder trabajar con ella
 char cadenaLeida[LIMITE_CADENA];
 char copiaCadenaLeida[LIMITE_CADENA];
+
+
+//Se procederá a leer las visibilidades del archivo y luego de acuerdo a su distancia respecto del origen
+//se verá a que proceso hijo corresponde enviar la visibilidad leída
+
+//se define esta variable por la cual un proceso hijos sabrá si la cadena enviada por el proceso padre
+//debe ser leída por el
+
+
+int procesoElegido;
 
 
 
@@ -255,8 +283,10 @@ char copiaCadenaLeida[LIMITE_CADENA];
 //Si estoy en el proceso padre
 if(pid > 0){
 
+    int ciclos = 0;//BORRAR
+
     //mientras no se llegue al final del documento
-    while(feof(archivo) == 0){
+    while(feof(archivo) == 0 && (ciclos < 2)){
 
 
         //se lee la linea completa con un limite de 300 y se transforma a cadena de caracteres
@@ -288,7 +318,8 @@ if(pid > 0){
         //se revisa el valor de acuerdo a la matriz de rangos
 
         i=0;
-        int procesoElegido;
+
+        
         //mientras se recorre la matriz
         while(i < cantidadDiscos){
 
@@ -310,8 +341,11 @@ if(pid > 0){
         write(matrizPipes[(procesoElegido * 2)- 2][ESCRITURA], cadenaLeida, sizeof(cadenaLeida));
         printf("Mensaje enviado al proceso hijo %d\n",procesoElegido);//BORRAR
 
+        sleep(0.1);
 
-        break;//BORRAR DESPUES ESTE BREAK
+
+        //break;//BORRAR DESPUES ESTE BREAK
+        ciclos=ciclos+1;//////////////////////////BORRAR
 
     }//fin while feof(archivo) == 0)
 
@@ -331,6 +365,8 @@ if(pid > 0){
 /////////////////proceso hijo
 if(pid == 0){
 
+    
+
     //se guarda el valor del proceso escogido guardado en la variable cantidadProcesosCreados cuando fue creado el proceso hijo
     int numeroProceso = cantidadProcesosCreados;
 
@@ -340,7 +376,8 @@ if(pid == 0){
     //se lee la cadena enviada por el proceso padre;
     read(matrizPipes[(numeroProceso * 2) - 2][LECTURA], visibilidadRecibida, sizeof(visibilidadRecibida));
 
-    printf("Estoy en el proceso hijo %d y recibi la cadena de mi padre:\n%sKKK\n",numeroProceso,visibilidadRecibida);//BORRAR
+    printf("Estoy en el proceso hijo %d y recibi la cadena de mi padre:\n%sKKK\nAunque en realidad esta cadena fue enviada al proceso %d\n",numeroProceso,visibilidadRecibida,procesoElegido);//BORRAR
+    sleep(0.2); ///borrar
 
 
 
@@ -437,7 +474,6 @@ if(pid > 0){
    	//char* cadenaSplit = strtok(cadena,",");
 
    	//printf("Lo que hay en cadena es:%sYYYYY\n");
-
 
 
 
