@@ -271,11 +271,7 @@ char copiaCadenaLeida[LIMITE_CADENA];
 //Se procederá a leer las visibilidades del archivo y luego de acuerdo a su distancia respecto del origen
 //se verá a que proceso hijo corresponde enviar la visibilidad leída
 
-//se define esta variable por la cual un proceso hijos sabrá si la cadena enviada por el proceso padre
-//debe ser leída por el
 
-
-int procesoElegido;
 
 
 
@@ -284,9 +280,10 @@ int procesoElegido;
 if(pid > 0){
 
     int ciclos = 0;//BORRAR
+    int procesoElegido;
 
     //mientras no se llegue al final del documento
-    while(feof(archivo) == 0 && (ciclos < 2)){
+    while(feof(archivo) == 0 && (ciclos < 20)){
 
 
         //se lee la linea completa con un limite de 300 y se transforma a cadena de caracteres
@@ -309,7 +306,7 @@ if(pid > 0){
         //Se calcula la distancia respecto del centro de la visibilidad observada 
         float distancia = calcularDistancia(copiaCadenaLeida,LIMITE_CADENA);
 
-        printf("la distancia es %f\n", distancia);//BORRAR
+        //printf("la distancia es %f\n", distancia);//BORRAR
         
 
         //Una vez calculada la distancia
@@ -335,13 +332,36 @@ if(pid > 0){
             i = i+1;
         }//fin while i < cantidadDiscos
 
-        printf("La distancia de la visibilidad observada es %f y se debe enviar al proceso hijo %d\n\n\n",distancia,procesoElegido);
+        printf("\n\nLa distancia de la visibilidad observada es %f y se debe enviar al proceso hijo %d\n\n\n",distancia,procesoElegido);
 
-        //Se envia la visibilidad observada al proceso hijo correspondiente
+        //Se envia a los procesos hijos el numero del proceso al cual se le enviará la cadena
+        //Esto con el objetivo de que solo el proceso al que se le fue enviado la visibilidad la lea y no todos los procesos.
+        //Para lograr esto, el numero del proceso elegido será enviado a todos los pipes para ser leído por su proceso hijo respectivo
+        int i = 1;
+        //mientras queden pipes por enviar
+        while(i<=cantidadPipes){
+
+            //se envia a los procesos hijos el numero del proceso que debe leer la visibilidad
+            write(matrizPipes[(i * 2)- 2][ESCRITURA], &procesoElegido, sizeof(procesoElegido));
+            i = i+1;
+
+
+        }//fin while
+
+        //write(matrizPipes[(procesoElegido * 2)- 2][ESCRITURA], &procesoElegido, sizeof(procesoElegido));
+        printf("El procesoElegido es %d y este numero ya fue enviado a los procesos hijos\n", procesoElegido);
+        sleep(0.1);
+
+
+
+        //Se envia la visibilidad observada al proceso hijo correspondientewrite(matrizPipes[(procesoElegido * 2)- 2][ESCRITURA], cadenaLeida, sizeof(cadenaLeida));
         write(matrizPipes[(procesoElegido * 2)- 2][ESCRITURA], cadenaLeida, sizeof(cadenaLeida));
         printf("Mensaje enviado al proceso hijo %d\n",procesoElegido);//BORRAR
+        sleep(0.2);
 
-        sleep(0.1);
+        
+        
+        
 
 
         //break;//BORRAR DESPUES ESTE BREAK
@@ -365,22 +385,40 @@ if(pid > 0){
 /////////////////proceso hijo
 if(pid == 0){
 
-    
+    int i =0;//borrar
 
     //se guarda el valor del proceso escogido guardado en la variable cantidadProcesosCreados cuando fue creado el proceso hijo
     int numeroProceso = cantidadProcesosCreados;
 
+    //variable donde se guardará el numero del proceso al cual fue enviado la visibilidad
+    int procesoElegido;
+
     //buffer para guardar la cadena(visibilidad) recibida
     char visibilidadRecibida[LIMITE_CADENA];
 
-    //se lee la cadena enviada por el proceso padre;
-    read(matrizPipes[(numeroProceso * 2) - 2][LECTURA], visibilidadRecibida, sizeof(visibilidadRecibida));
+while(i<20){ 
+    //Se lee el entero enviado por el proceso padre
+    read(matrizPipes[(numeroProceso * 2)- 2][LECTURA], &procesoElegido, sizeof(procesoElegido));
+    printf("Soy el hijo %d y recibi el entero de mi padre el cual es: %d\n",numeroProceso,procesoElegido);
+    sleep(0.2);
 
-    printf("Estoy en el proceso hijo %d y recibi la cadena de mi padre:\n%sKKK\nAunque en realidad esta cadena fue enviada al proceso %d\n",numeroProceso,visibilidadRecibida,procesoElegido);//BORRAR
+    //Si la visibilidad fue enviada a ese proceso hijo
+    if(numeroProceso == procesoElegido){
+
+        //se lee la cadena enviada por el proceso padre
+        read(matrizPipes[(numeroProceso * 2) - 2][LECTURA], visibilidadRecibida, sizeof(visibilidadRecibida));
+        printf("Estoy en el proceso hijo %d y recibi la cadena de mi padre:\n%sKKK\n",numeroProceso,visibilidadRecibida);
+
+
+    }//fin if
+
+    else{printf("soy el proceso hijo %d y no me toca leer la cadena a mi\n",numeroProceso);}//borrar
+
+i=i+1;
+    //printf("Estoy en el proceso hijo %d y recibi la cadena de mi padre:\n%sKKK\nAunque en realidad esta cadena fue enviada al proceso %d\n",numeroProceso,visibilidadRecibida,procesoElegido);//BORRAR
     sleep(0.2); ///borrar
 
-
-
+}
 
 }//fin if proceso hijo
 
