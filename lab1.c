@@ -5,6 +5,7 @@
 #include <sys/wait.h> //Define las constantes simbólicas para usar con waitpid(), wait() por ejemplo
 #include <sys/types.h>
 #include <stdint.h>
+#include <math.h>
 //#include <jpeglib.h> //no lo encuentra el compilador
 #include <getopt.h>
 #include <stdbool.h>
@@ -16,65 +17,9 @@
 #define RANGO_SUP 1
 #define INFINITO 9999999
 #define DECIMAL 0.0001
-
-/*
-//Funcion que lee un archivo y devuelve un listado de todas lo leído en cada linea del archivo
-//Entradas: nombre del archivo (string)
-//Salida: array de strings, en donde en cada posición hay una cadena, producto de lo leído en una linea del archivo
-//Descripción: Se abre el archivo y se comienza a leer utilizando la función fgets y cada cadena leída se guarda en una posición del array
-char* leerArchivo(char* nombreArchivo){
-	printf("AAAAAAAAAAAAAA");
-
-	//se abre el archivo en modo lectura
-   	FILE* archivo = fopen(nombreArchivo,"r");
-
-   	//Si el archivo no existe se retorna NULL
-   	if(archivo == NULL){return(NULL);}
-
-   	//valor para determinar las cadenas totales leídas
-   	int cantidadCadenasLeidas = 0;
-
-   	//variable para leer la cadena leída
-   	char cadenaLeida[200];
-
-   	//Se solicita el espacio en memoria para el array de salida
-   	char* arraySalida = (char*)malloc(sizeof(char));
-
-   	
+#define LIMITE_CADENA 300
 
 
-
-
-
-   	
-
-   	//Mientras no me encuentre al final del archivo
-   	
-   	while((feof(archivo) == 0)&&(cadenaLeida != "\n")){
-
-   		//Se lee la cadena del archivo
-   		fgets(cadenaLeida,200,archivo);
-   		//printf("Lo que hay en cadena es:%sYYYYY\n",cadenaLeida);
-
-
-   		//se agrega la cadena leida al arreglo, para esto, se redimensiona el arreglo con la funcion realloc
-   		arraySalida = (char*)realloc(arraySalida,sizeof(char)*(cantidadCadenasLeidas+1));
-   		arraySalida[cantidadCadenasLeidas] = cadenaLeida;
-   		printf("la cadena agarrada en la posicion %d es %s\n", cantidadCadenasLeidas,arraySalida[cantidadCadenasLeidas]);
-   		cantidadCadenasLeidas = cantidadCadenasLeidas + 1;
-
-   	}//fin while
-    
-    fclose(archivo);
-   	free(arraySalida);//BORRAR DESPUES 
-
-   	return(NULL);
-
-
-
-}//fin funcion leerArchivo
-
-*/////////////////////////////////////////////////////////////////////
 
 int main(int argc, char* argv[]){
 
@@ -298,6 +243,50 @@ if(pid > 0){
         i = i+1;
 
     }//finn while
+}//fin if proceso padre
+
+//arreglo de caracteres donde se leerá la linea del archivo de entrada junto con su copia para poder manipularla
+char cadenaLeida[LIMITE_CADENA];
+char copiaCadenaLeida[LIMITE_CADENA];
+
+
+
+
+//Si estoy en el proceso padre
+if(pid > 0){
+
+    //mientras no se llegue al final del documento
+    while(feof(archivo) == 0){
+
+
+        //se lee la linea completa con un limite de 300 y se transforma a cadena de caracteres
+        fgets(cadenaLeida,LIMITE_CADENA,archivo);
+
+        //Para manipular la cadena leída, se pretende realizar split con la funcion strtok
+        //pero esta funcion modifica el arreglo, por lo que para evitar problemas se hará una copia del arreglo
+
+        //se procede a copiar la cadena leida
+        i = 0;
+
+        //mientras queden elementos por copiar
+        while(i < LIMITE_CADENA){
+
+            copiaCadenaLeida[i] = cadenaLeida[i];
+            i = i+1;
+
+        }//fin while donde se copia la cadena leida
+
+        float distancia = calcularDistancia(copiaCadenaLeida,LIMITE_CADENA);
+        printf("la distancia es %f\n", distancia);
+        break;//BOORRAR BREAK
+
+
+
+
+    }//fin while eof == 0
+
+
+
 }//fin if proceso padre
 
 
