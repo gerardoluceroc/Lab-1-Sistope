@@ -96,10 +96,10 @@ printf("la bandera de -b flag es %d\n", flagB);//BORRAR
     }
 
 
-    //A continuación, se crearán los pipes correspondientes para hacer la comunicacion del proceso padre con sus procesos hijos
+    //A continuación, se crearán los pipes correspondientes para hacer la comunicacion del proceso padre con sus procesos hijos.
     //estos pipes se guardarán en un array, osea será una matriz en que cada fila será un pipe.
     //Como se debe crear una comunicación bidireccional, se realizarán 2 pipes por cada proceso hijo
-    //en donde en el primer pipe el padre escribirá y el hijo leerá y en segundo el hijo escribirá y el padre leerá
+    //en donde en el primer pipe, el padre escribirá y el hijo leerá y en el segundo el hijo escribirá y el padre leerá
     //Por lo tanto, cada 2 posiciones de la matriz de pipes, se guardarán los pipes correspondientes a la comunicación del
     //proceso padre con su respectivo proceso hijo.
 
@@ -198,7 +198,7 @@ FILE* archivo;
 
 //Se crea una matriz donde en cada fila iran guardados los valores del rango inferior y superior del disco para enviar
 //las visibilidades leídas a su proceso hijo correspondiente.
-//cabe aclarar que a todo rango superior se le restara una constante de 0.0001 para no tener problemas con los intervalos
+//cabe aclarar que a todo rango superior se le restara una constante de 0.0001 llamada DECIMAL para no tener problemas con los intervalos
 //Por ejemplo, si son 2 discos con un ancho de 200, la matriz tendría los siguientes valores.
 //matrizRango = [[0,199.999], [200,399.999], [400, infinito]];
 float matrizRango[cantidadDiscos][2];
@@ -245,7 +245,7 @@ if(pid > 0){
     }//finn while
 }//fin if proceso padre
 
-//arreglo de caracteres donde se leerá la linea del archivo de entrada junto con su copia para poder manipularla
+//arreglo de caracteres donde se leerá la linea del archivo de entrada junto con su copia para poder trabajar con ella
 char cadenaLeida[LIMITE_CADENA];
 char copiaCadenaLeida[LIMITE_CADENA];
 
@@ -276,12 +276,38 @@ if(pid > 0){
 
         }//fin while donde se copia la cadena leida
 
+        //Se calcula la distancia respecto del centro de la visibilidad observada 
         float distancia = calcularDistancia(copiaCadenaLeida,LIMITE_CADENA);
-        printf("la distancia es %f\n", distancia);
-        break;//BOORRAR BREAK
+
+        printf("la distancia es %f\n", distancia);//BORRAR
+        
+
+        //Una vez calculada la distancia
+        //se procede a revisar a que proceso(disco) se debe enviar la visibilidad analizada
+
+        //se revisa el valor de acuerdo a la matriz de rangos
+
+        i=0;
+        int procesoElegido;
+        //mientras se recorre la matriz
+        while(i < cantidadDiscos){
+
+            //si la distancia es menor o igual que la cota superior
+            if(distancia <= matrizRango[i][RANGO_SUP]){
+
+                //se guarda el numero del proceso elegido para mandarle la cadena de caracteres de la visibilidad observada
+                procesoElegido = i;
+                //se detiene el while ya que se encontró la respuesta
+                break;
+            }//fin if
+
+            i = i+1;
+        }//fin while i < cantidadDiscos
+
+        printf("La distancia de la visibilidad observada es %f y se debe enviar al proceso hijo %d\n",distancia,procesoElegido);
 
 
-
+        break;//BORRAR BREAK
 
     }//fin while eof == 0
 
