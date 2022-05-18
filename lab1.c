@@ -283,7 +283,7 @@ if(pid > 0){
     int procesoElegido;
 
     //mientras no se llegue al final del documento
-    while(feof(archivo) == 0 && (ciclos < 20)){
+    while(feof(archivo) == 0 && (ciclos < 10)){
 
 
         //se lee la linea completa con un limite de 300 y se transforma a cadena de caracteres
@@ -354,7 +354,7 @@ if(pid > 0){
 
 
 
-        //Se envia la visibilidad observada al proceso hijo correspondientewrite(matrizPipes[(procesoElegido * 2)- 2][ESCRITURA], cadenaLeida, sizeof(cadenaLeida));
+        //Se envia la visibilidad observada al proceso hijo correspondiente
         write(matrizPipes[(procesoElegido * 2)- 2][ESCRITURA], cadenaLeida, sizeof(cadenaLeida));
         printf("Mensaje enviado al proceso hijo %d\n",procesoElegido);//BORRAR
         sleep(0.2);
@@ -396,29 +396,56 @@ if(pid == 0){
     //buffer para guardar la cadena(visibilidad) recibida
     char visibilidadRecibida[LIMITE_CADENA];
 
-while(i<20){ 
-    //Se lee el entero enviado por el proceso padre
-    read(matrizPipes[(numeroProceso * 2)- 2][LECTURA], &procesoElegido, sizeof(procesoElegido));
-    printf("Soy el hijo %d y recibi el entero de mi padre el cual es: %d\n",numeroProceso,procesoElegido);
-    sleep(0.2);
-
-    //Si la visibilidad fue enviada a ese proceso hijo
-    if(numeroProceso == procesoElegido){
-
-        //se lee la cadena enviada por el proceso padre
-        read(matrizPipes[(numeroProceso * 2) - 2][LECTURA], visibilidadRecibida, sizeof(visibilidadRecibida));
-        printf("Estoy en el proceso hijo %d y recibi la cadena de mi padre:\n%sKKK\n",numeroProceso,visibilidadRecibida);
+    //variable para guardar la cantidad total de visibilidades obtenidas por el proceso
+    int cantidadVisibilidades = 0;
 
 
-    }//fin if
+    while(i<10){ ////////AQUI DEBERIA CAMBIAR por un while true noma
+        //Se lee el entero enviado por el proceso padre
+        read(matrizPipes[(numeroProceso * 2)- 2][LECTURA], &procesoElegido, sizeof(procesoElegido));
+        printf("Soy el hijo %d y recibi el entero de mi padre el cual es: %d\n",numeroProceso,procesoElegido);
+        sleep(0.2);
 
-    else{printf("soy el proceso hijo %d y no me toca leer la cadena a mi\n",numeroProceso);}//borrar
+        //Si la visibilidad fue enviada a ese proceso hijo
+        if(numeroProceso == procesoElegido){
 
-i=i+1;
+            //se lee la cadena enviada por el proceso padre
+            read(matrizPipes[(numeroProceso * 2) - 2][LECTURA], visibilidadRecibida, sizeof(visibilidadRecibida));
+
+            //se aumenta el contador de las visibilidades vistas
+            cantidadVisibilidades = cantidadVisibilidades + 1;
+
+            printf("Estoy en el proceso hijo %d y recibi la cadena de mi padre:\n%sKKK\n",numeroProceso,visibilidadRecibida);
+
+            //Si lo leído es un "FIN", se deja de leer y se sale del ciclo
+            if(visibilidadRecibida == "FIN"){
+                break;
+
+            }//fin if
+
+        }//fin if numeroProceso == procesoElegido
+
+            else{printf("soy el proceso hijo %d y no me toca leer la cadena a mi\n",numeroProceso);}//borrar
+
+        
+        i=i+1;////BORRAR (en volá)(si borrar)
     //printf("Estoy en el proceso hijo %d y recibi la cadena de mi padre:\n%sKKK\nAunque en realidad esta cadena fue enviada al proceso %d\n",numeroProceso,visibilidadRecibida,procesoElegido);//BORRAR
-    sleep(0.2); ///borrar
+    sleep(0.2); ///borrar(no se aun, puede que no)/////////////////////////////////////////////
 
-}
+    }//fin while
+
+    //HAY QUE VER COMO ALMACENAR LAS CADENAS RECIBIDAS
+    //PERO PRIMERO SE VERA EL TEMA CON EL EXEC
+    ///////////////////////////
+
+    printf("visibilidades total vistas por el proceso hijo %d son %d\n", numeroProceso, cantidadVisibilidades);//borrar
+
+    //Se procede a calcular las propiedas del disco con las visibilidades obtenidas.
+
+    int** nose;
+    //Para esto, se sobreescribe codigo con un funcion parte de la familia de exec
+    execl("./vis",nose,(char*)NULL);
+    printf("Si esto se ve en el proceso hijo %d hay algo malo\n",numeroProceso);
 
 }//fin if proceso hijo
 
@@ -430,9 +457,7 @@ i=i+1;
 
 
 
-
-
-
+    printf("Yo como proceso padre sigo vivo porsiaca\n");
 
 
 //En caso de estar en el proceso padre

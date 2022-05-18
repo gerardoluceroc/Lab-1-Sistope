@@ -2,6 +2,7 @@
 #include <stdio.h> //Funciones de entrada y salida como printf
 #include <stdlib.h> //Asignación de memoria, atoi, etc.
 #include <string.h> 
+#include <math.h>
 #include <sys/wait.h> //Define las constantes simbólicas para usar con waitpid(), wait() por ejemplo
 #include <sys/types.h>
 #include "funciones.c"
@@ -82,6 +83,8 @@ int main(int argc, char* argv[]){
 		float* listaRandom = (float*)malloc(sizeof(float)*2);
 		listaRandom[0] = -77.0;
 		listaRandom[1] = 84.7;
+
+		
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////
