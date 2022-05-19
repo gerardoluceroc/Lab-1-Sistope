@@ -442,9 +442,9 @@ if(pid == 0){
 
     //Se procede a calcular las propiedas del disco con las visibilidades obtenidas.
 
-    int** nose;
+  
     //Para esto, se sobreescribe codigo con un funcion parte de la familia de exec
-    execl("./vis",nose,(char*)NULL);
+    execl("./vis","./vis",(char*)NULL);
     printf("Si esto se ve en el proceso hijo %d hay algo malo\n",numeroProceso);
 
 }//fin if proceso hijo
@@ -457,8 +457,12 @@ if(pid == 0){
 
 
 
-    printf("Yo como proceso padre sigo vivo porsiaca\n");
-
+    //printf("Yo como proceso padre sigo vivo porsiaca\n");
+    
+    //char str1[300] = "hola";
+    //char str2[300] = "como estais";
+    //strcat(str1,str2);
+    //printf("El resultado de la concatenación de %s con %s es: %s y el largo de str1 es %d\n",str1,str2,str1,sizeof(str1));
 
 //En caso de estar en el proceso padre
 if(pid > 0){
@@ -563,6 +567,7 @@ if(pid > 0){
 
 
 
-
+    printf("soy el padre y voy a retornar\n");
+    wait(NULL);
 	return(0);
 }//fin main
