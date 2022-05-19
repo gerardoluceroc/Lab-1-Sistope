@@ -283,7 +283,7 @@ if(pid > 0){
     int procesoElegido;
 
     //mientras no se llegue al final del documento
-    while(feof(archivo) == 0 && (ciclos < 10)){
+    while(feof(archivo) == 0 || (ciclos < 51)){//BORRAR LOS CICLOS
 
 
         //se lee la linea completa con un limite de 300 y se transforma a cadena de caracteres
@@ -338,32 +338,47 @@ if(pid > 0){
 
             //printf("El procesoElegido es %d y este numero ya fue enviado a los procesos hijos\n", procesoElegido);
 
-            //Se copia el pipe perteneciente al proceso hijo elegido para enviar la cadena al proceso que le corresponde
-            //dup2(matrizPipes[(procesoElegido * 2) - 2][LECTURA], STDIN_FILENO);
-            //close(matrizPipes[(procesoElegido * 2) - 2][LECTURA]);
-            dup2(matrizPipes[(procesoElegido * 2) - 2][ESCRITURA], STDOUT_FILENO);
+        //Se copia el pipe perteneciente al proceso hijo elegido para enviar la cadena al proceso que le corresponde
+        //dup2(matrizPipes[(procesoElegido * 2) - 2][LECTURA], STDIN_FILENO);
+        //close(matrizPipes[(procesoElegido * 2) - 2][LECTURA]);
+        dup2(matrizPipes[(procesoElegido * 2) - 2][ESCRITURA], STDOUT_FILENO);
 
-            //printf("Pipe copiado en entrada y salida estandar\n");
+        //printf("Pipe copiado en entrada y salida estandar\n");
 
-            //Se envia la cadena leída al proceso correspondiente
-            write(STDOUT_FILENO, cadenaLeida, sizeof(cadenaLeida));
-            //sleep(1);
-            //printf("Cadena enviada al proceso hijo\n");
-            sleep(0.2);
-            //wait(NULL);
+        //Se envia la cadena leída al proceso correspondiente
+        write(STDOUT_FILENO, cadenaLeida, sizeof(cadenaLeida));
+        //sleep(1);
+        //printf("Cadena enviada al proceso hijo\n");
+        sleep(0.2);
+        //wait(NULL);
+   ///////////////////////////////////////////////
 
-
-
-            ///////////////////////////////////////////////
-
-
-
-
-        //break;//BORRAR DESPUES ESTE BREAK
+         //break;//BORRAR DESPUES ESTE BREAK
         ciclos=ciclos+1;//////////////////////////BORRAR
         //printf("CICLOS = %d\n",ciclos);
 
+
     }//fin while feof(archivo) == 0)
+
+    //Se procede a enviar a los procesos hijos el string de "FIN" para indicar que dejen de leer
+    
+
+    i = 1;
+
+    //mientras queden pipes por escribir
+    while(i <= cantidadDiscos){
+
+        //Se copia el pipe del procesor correspondiente
+        dup2(matrizPipes[(i * 2) - 2][ESCRITURA], STDOUT_FILENO);
+
+        //se le manda el mensaje al proceso hijo
+        write(STDOUT_FILENO,"FIN",sizeof("FIN"));
+
+        i = i+1;
+    }//fin while
+
+
+    sleep(0.2);//BORRAR ?)
 
 }//fin if proceso padre
 
@@ -512,6 +527,6 @@ if(pid > 0){
 
 
     printf("FINAAAAAAAAAAAAAAALLLLLLLLLLsoy el padre y voy a retornar\n");
-    wait(NULL);
+    //wait(NULL);
 	return(0);
 }//fin main

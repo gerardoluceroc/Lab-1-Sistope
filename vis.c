@@ -8,29 +8,41 @@
 int main(int argc, char* argv[]){
 
 
+
+	
 	int i = 0;
 	char buffer[300];
-	char matriz[300][300];
+	int arr[3] = {1,2,3};
 	int cantidadVisibilidades = 0;
 	int numeroProcesoHijo = atoi(argv[1]);
 	printf("Acabo de entrar a vis.c siendo el hijo %d y el argumento es: %s\n",numeroProcesoHijo,argv[0]);
 
-	while(i<5){
 
+	while(1){
 
+		//Se lee lo enviado por el proceso padre
 		read(STDIN_FILENO, buffer, sizeof(buffer));
-		printf("estoy en vis.c del proceso hijo %d y recibi la cadena:\n%s\n",numeroProcesoHijo,buffer);
-		i=i+1;
+
+		//Si lo enviado es "FIN"
+		if(buffer == "FIN"){
+			//se detiene el ciclo y se deja de leer
+			break;
+		}
+		printf("estoy en vis.c del proceso hijo %d y recibi la cadena:\n%s\n",numeroProcesoHijo,buffer);//BORRAR
+
+		i=i+1;//BORRARRRR
 		if(strlen(buffer) > 0){
 			cantidadVisibilidades = cantidadVisibilidades+1;
 		}
 		//sleep(1);
 		//wait(NULL);
 
+	}//fin while
 
-	}
 
+    sleep(3);
 	printf("LA cantidad de visibilidades recibidas por el proceso %d es %d\n",numeroProcesoHijo,cantidadVisibilidades);
+
 	
 
 
