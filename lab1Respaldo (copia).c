@@ -23,7 +23,6 @@
 
 int main(int argc, char* argv[]){
 
-
 //banderas para verificar el formato de entrada de los parametros
 	int flagI = 0;
 	int flagO = 0;
@@ -83,7 +82,7 @@ int main(int argc, char* argv[]){
     }//fin if flag d,i,n,o
 
     
-    printf("la bandera de -b flag es %d\n", flagB);//BORRAR
+printf("la bandera de -b flag es %d\n", flagB);//BORRAR
 
     //se transforman los valos obtenidos del ancho y la cantidad de discos a entero con la funcion atoi
     int anchoDisco = atoi(ancho);
@@ -140,231 +139,241 @@ int main(int argc, char* argv[]){
 
 
 
-    printf("cantidad de pipes %d\n", cantidadPipes);//borrar
+printf("cantidad de pipes %d\n", cantidadPipes);//borrar
 
-    //se comienzan a crear los procesos hijos
-    int cantidadProcesosHijos = cantidadDiscos;
-    int cantidadProcesosCreados = 0;
-    int pid = 1;
+//se comienzan a crear los procesos hijos
+int cantidadProcesosHijos = cantidadDiscos;
+int cantidadProcesosCreados = 0;
+int pid = 1;
 
-    //mientras queden procesos hijos por crear 
-    while((cantidadProcesosCreados < cantidadProcesosHijos) && (pid > 0)){
+//mientras queden procesos hijos por crear 
+while((cantidadProcesosCreados < cantidadProcesosHijos) && (pid > 0)){
 
-        //Se crea el proceso hijo
-        pid = fork();
-        cantidadProcesosCreados = cantidadProcesosCreados + 1;
+    //Se crea el proceso hijo
+    pid = fork();
+    cantidadProcesosCreados = cantidadProcesosCreados + 1;
 
-        //Proceso padre
-        if(pid > 0){
-
-            printf("Soy el proceso padre y mi variable pid es %d y mi pid como padre es %d\n", pid, getpid());//Borrar
-
-            //se cierra la lectura en el pipe que el padre escribe para el proceso hijo correspondiente
-            close(matrizPipes[(cantidadProcesosCreados*2) - 2][LECTURA]);
-
-            //Se cierra la escritura en el pipe que el padre lee lo enviado por el proceso hijo
-            close(matrizPipes[(cantidadProcesosCreados*2) - 1][ESCRITURA]);
-
-
-        }//fin if pid > 0
-
-        //Proceso hijo
-        else if(pid == 0){
-
-            printf("soy el proceso hijo y mi variable pid es %d y mi pid es %d\n", pid, getpid());//borrar
-
-            //se cierra la escritura en el pipe que el hijo lee lo enviado por el padre
-            close(matrizPipes[(cantidadProcesosCreados*2) - 2][ESCRITURA]);
-
-            //Se cierra la lectura en el pipe que el hijo le escribe al proceso padre
-            close(matrizPipes[(cantidadProcesosCreados*2) - 1][LECTURA]);
-            
-
-        }//fin if pid == 0
-
-        else{
-            printf("Error al crear el proceso hijo\n");
-        }
-
-
-
-    }//fin while cantidadProcesosCreados < cantidadProcesosHijos
-
-
-
-
-
-    //Se declara un archivo tipo file donde se manipulará el archivo de entrada
-    FILE* archivo;
-
-    //Se crea una matriz donde en cada fila iran guardados los valores del rango inferior y superior del disco para enviar
-    //las visibilidades leídas a su proceso hijo correspondiente.
-    //cabe aclarar que a todo rango superior se le restara una constante de 0.0001 llamada DECIMAL para no tener problemas con los intervalos
-    //Por ejemplo, si son 2 discos con un ancho de 200, la matriz tendría los siguientes valores.
-    //matrizRango = [[0,199.999], [200,399.999], [400, infinito]];
-    float matrizRango[cantidadDiscos][2];
-
-
-    //En caso de estar en el proceso padre
+    //Proceso padre
     if(pid > 0){
-        //se abre el archivo de entrada en modo lectura para extraer las visibilidades
-        archivo = fopen(nombreArchivoEntrada,"r");
 
-        //Se procede a rellenar la matriz de rangos
+        printf("Soy el proceso padre y mi variable pid es %d y mi pid como padre es %d\n", pid, getpid());//Borrar
+
+        //se cierra la lectura en el pipe que el padre escribe para el proceso hijo correspondiente
+        close(matrizPipes[(cantidadProcesosCreados*2) - 2][LECTURA]);
+
+        //Se cierra la escritura en el pipe que el padre lee lo enviado por el proceso hijo
+        close(matrizPipes[(cantidadProcesosCreados*2) - 1][ESCRITURA]);
+
+
+    }//fin if pid > 0
+
+    //Proceso hijo
+    else if(pid == 0){
+
+        printf("soy el proceso hijo y mi variable pid es %d y mi pid es %d\n", pid, getpid());//borrar
+
+        //se cierra la escritura en el pipe que el hijo lee lo enviado por el padre
+        close(matrizPipes[(cantidadProcesosCreados*2) - 2][ESCRITURA]);
+
+        //Se cierra la lectura en el pipe que el hijo le escribe al proceso padre
+        close(matrizPipes[(cantidadProcesosCreados*2) - 1][LECTURA]);
+        
+
+    }//fin if pid == 0
+
+    else{
+        printf("Error al crear el proceso hijo\n");
+    }
+
+
+
+}//fin while cantidadProcesosCreados < cantidadProcesosHijos
+
+
+
+
+
+//Se declara un archivo tipo file donde se manipulará el archivo de entrada
+FILE* archivo;
+
+//Se crea una matriz donde en cada fila iran guardados los valores del rango inferior y superior del disco para enviar
+//las visibilidades leídas a su proceso hijo correspondiente.
+//cabe aclarar que a todo rango superior se le restara una constante de 0.0001 llamada DECIMAL para no tener problemas con los intervalos
+//Por ejemplo, si son 2 discos con un ancho de 200, la matriz tendría los siguientes valores.
+//matrizRango = [[0,199.999], [200,399.999], [400, infinito]];
+float matrizRango[cantidadDiscos][2];
+
+
+//En caso de estar en el proceso padre
+if(pid > 0){
+    //se abre el archivo de entrada en modo lectura para extraer las visibilidades
+    archivo = fopen(nombreArchivoEntrada,"r");
+
+    //Se procede a rellenar la matriz de rangos
+    i = 0;
+    float valorCota = 0.0; //valor para ir rellenando la matriz de rango
+
+    //mientras se rellena la matriz
+    while(i < cantidadDiscos){
+
+        
+
+        //Se ponen los valores de las cotas para los intervalos en la matriz de rangos
+        matrizRango[i][RANGO_INF] = valorCota;
+
+        //se suma el ancho para ponerlo en el rango o cota superior del intervalo
+        //restandole el decimal constante 0.0001
+
+        valorCota = (valorCota + anchoDisco) - DECIMAL;
+
+        //se pone el valor en el rango superior
+        matrizRango[i][RANGO_SUP] = valorCota;
+
+        //Se le vuelve a sumar el decimal restado al valor para ponerlo de cota o rango inferior en la siguiente posicion o "intervalo"
+        valorCota = valorCota + DECIMAL;
+
+        //En caso de encontrarme en la ultima posición, se cambia el valor del rango superior por INFINITO
+        if(i == cantidadDiscos-1){
+            matrizRango[i][RANGO_SUP] = INFINITO;
+        }
+        
+        //BORRAR ESTOS PRINT
+        printf("dentro del while de la matriz rango, i = %d, valorCota = %f, matrizRango[%d][RANGO_INF] = %f, matrizRango[%d][RANGO_SUP] = %f\n",i,valorCota,i,matrizRango[i][RANGO_INF],i,matrizRango[i][RANGO_SUP]);
+        printf("LA SUMA DE 200 - 0.0000001 ES %f\n",200.0 - 0.000001);
+        i = i+1;
+
+    }//finn while
+}//fin if proceso padre
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//arreglo de caracteres donde se leerá la linea del archivo de entrada junto con su copia para poder trabajar con ella
+char cadenaLeida[LIMITE_CADENA];
+char copiaCadenaLeida[LIMITE_CADENA];
+
+
+//Se procederá a leer las visibilidades del archivo y luego de acuerdo a su distancia respecto del origen
+//se verá a que proceso hijo corresponde enviar la visibilidad leída
+
+
+
+
+
+
+//Si estoy en el proceso padre
+if(pid > 0){
+
+    int ciclos = 0;//BORRAR
+    int procesoElegido;
+
+    //mientras no se llegue al final del documento
+    while(feof(archivo) == 0 && (ciclos < 10)){
+
+
+        //se lee la linea completa con un limite de 300 y se transforma a cadena de caracteres
+        fgets(cadenaLeida,LIMITE_CADENA,archivo);
+
+        //Para manipular la cadena leída, se pretende realizar split con la funcion strtok
+        //pero esta funcion modifica el arreglo, por lo que para evitar problemas se hará una copia del arreglo
+
+        //se procede a copiar la cadena leida
         i = 0;
-        float valorCota = 0.0; //valor para ir rellenando la matriz de rango
 
-        //mientras se rellena la matriz
-        while(i < cantidadDiscos){
+        //mientras queden elementos por copiar
+        while(i < LIMITE_CADENA){
 
-            
-
-            //Se ponen los valores de las cotas para los intervalos en la matriz de rangos
-            matrizRango[i][RANGO_INF] = valorCota;
-
-            //se suma el ancho para ponerlo en el rango o cota superior del intervalo
-            //restandole el decimal constante 0.0001
-
-            valorCota = (valorCota + anchoDisco) - DECIMAL;
-
-            //se pone el valor en el rango superior
-            matrizRango[i][RANGO_SUP] = valorCota;
-
-            //Se le vuelve a sumar el decimal restado al valor para ponerlo de cota o rango inferior en la siguiente posicion o "intervalo"
-            valorCota = valorCota + DECIMAL;
-
-            //En caso de encontrarme en la ultima posición, se cambia el valor del rango superior por INFINITO
-            if(i == cantidadDiscos-1){
-                matrizRango[i][RANGO_SUP] = INFINITO;
-            }
-            
-            //BORRAR ESTOS PRINT
-            printf("dentro del while de la matriz rango, i = %d, valorCota = %f, matrizRango[%d][RANGO_INF] = %f, matrizRango[%d][RANGO_SUP] = %f\n",i,valorCota,i,matrizRango[i][RANGO_INF],i,matrizRango[i][RANGO_SUP]);
-            printf("LA SUMA DE 200 - 0.0000001 ES %f\n",200.0 - 0.000001);
+            copiaCadenaLeida[i] = cadenaLeida[i];
             i = i+1;
 
-        }//finn while
-    }//fin if proceso padre
+        }//fin while donde se copia la cadena leida
+
+        //Se calcula la distancia respecto del centro de la visibilidad observada 
+        float distancia = calcularDistancia(copiaCadenaLeida,LIMITE_CADENA);
+
+        //printf("la distancia es %f\n", distancia);//BORRAR
+        
+
+        //Una vez calculada la distancia
+        //se procede a revisar a que proceso(disco) se debe enviar la visibilidad analizada
+
+        //se revisa el valor de acuerdo a la matriz de rangos
+
+        i=0;
+
+        
+        //mientras se recorre la matriz
+        while(i < cantidadDiscos){
+
+            //si la distancia es menor o igual que la cota superior
+            if(distancia <= matrizRango[i][RANGO_SUP]){
+
+                //se guarda el numero del proceso elegido para mandarle la cadena de caracteres de la visibilidad observada
+                procesoElegido = i+1;
+                //se detiene el while ya que se encontró la respuesta
+                break;
+            }//fin if
+
+            i = i+1;
+        }//fin while i < cantidadDiscos
+
+        printf("\n\nLa distancia de la visibilidad observada es %f y se debe enviar al proceso hijo %d\n\n\n",distancia,procesoElegido);
+
+        //Se envia a los procesos hijos el numero del proceso al cual se le enviará la cadena
+        //Esto con el objetivo de que solo el proceso al que se le fue enviado la visibilidad la lea y no todos los procesos.
+        //Para lograr esto, el numero del proceso elegido será enviado a todos los pipes para ser leído por su proceso hijo respectivo
+        int i = 1;
+        //mientras queden pipes por enviar
+        while(i<=cantidadPipes){
+
+            //se envia a los procesos hijos el numero del proceso que debe leer la visibilidad
+            write(matrizPipes[(i * 2)- 2][ESCRITURA], &procesoElegido, sizeof(procesoElegido));
+            i = i+1;
+
+
+        }//fin while
+
+
+/*
+        //write(matrizPipes[(procesoElegido * 2)- 2][ESCRITURA], &procesoElegido, sizeof(procesoElegido));
+        printf("El procesoElegido es %d y este numero ya fue enviado a los procesos hijos\n", procesoElegido);
+        sleep(0.1);
 
 
 
+        //Se envia la visibilidad observada al proceso hijo correspondiente
+        write(matrizPipes[(procesoElegido * 2)- 2][ESCRITURA], cadenaLeida, sizeof(cadenaLeida));
+        printf("Mensaje enviado al proceso hijo %d\n",procesoElegido);//BORRAR
+        sleep(0.2);
+
+        
+*/        
+        
 
 
+        //break;//BORRAR DESPUES ESTE BREAK
+        ciclos=ciclos+1;//////////////////////////BORRAR
+
+    }//fin while feof(archivo) == 0)
+
+}//fin if proceso padre
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-    //arreglo de caracteres donde se leerá la linea del archivo de entrada junto con su copia para poder trabajar con ella
-    char cadenaLeida[LIMITE_CADENA];
-    char copiaCadenaLeida[LIMITE_CADENA];
-
-
-    //Se procederá a leer las visibilidades del archivo y luego de acuerdo a su distancia respecto del origen
-    //se verá a que proceso hijo corresponde enviar la visibilidad leída
-
-
-
-
-
-
-    //Si estoy en el proceso padre
-    if(pid > 0){ 
-
-
-
-        int ciclos = 0;//BORRAR
-        int procesoElegido;
-
-        //mientras no se llegue al final del documento
-        while(feof(archivo) == 0 && (ciclos < 6)){
-
-
-            //se lee la linea completa con un limite de 300 y se transforma a cadena de caracteres
-            fgets(cadenaLeida,LIMITE_CADENA,archivo);
-
-            //Para manipular la cadena leída, se pretende realizar split con la funcion strtok
-            //pero esta funcion modifica el arreglo, por lo que para evitar problemas se hará una copia del arreglo
-
-            //se procede a copiar la cadena leida
-            i = 0;
-
-            //mientras queden elementos por copiar
-            while(i < LIMITE_CADENA){
-
-                copiaCadenaLeida[i] = cadenaLeida[i];
-                i = i+1;
-
-            }//fin while donde se copia la cadena leida
-
-            //Se calcula la distancia respecto del centro de la visibilidad observada 
-            float distancia = calcularDistancia(copiaCadenaLeida,LIMITE_CADENA);
-
-            //printf("la distancia es %f\n", distancia);//BORRAR
-            
-
-            //Una vez calculada la distancia
-            //se procede a revisar a que proceso(disco) se debe enviar la visibilidad analizada
-
-            //se revisa el valor de acuerdo a la matriz de rangos
-
-            i=0;
-
-            
-            //mientras se recorre la matriz
-            while(i < cantidadDiscos){
-
-                //si la distancia es menor o igual que la cota superior
-                if(distancia <= matrizRango[i][RANGO_SUP]){
-
-                    //se guarda el numero del proceso elegido para mandarle la cadena de caracteres de la visibilidad observada
-                    procesoElegido = i+1;
-                    //se detiene el while ya que se encontró la respuesta
-                    break;
-                }//fin if
-
-                i = i+1;
-            }//fin while i < cantidadDiscos
-
-            printf("\n\nLa distancia de la visibilidad observada es %f y se debe enviar al proceso hijo %d\n\n\n",distancia,procesoElegido);
-
-            //PROBANDOOOOOOOO//////////////////////
-
-            printf("El procesoElegido es %d y este numero ya fue enviado a los procesos hijos\n", procesoElegido);
-
-            //Se copia el pipe perteneciente al proceso hijo elegido para enviar la cadena al proceso que le corresponde
-            //dup2(matrizPipes[(procesoElegido * 2) - 2][LECTURA], STDIN_FILENO);
-            dup2(matrizPipes[(procesoElegido * 2) - 2][ESCRITURA], STDOUT_FILENO);
-
-            //printf("Pipe copiado en entrada y salida estandar\n");
-
-            //Se envia la cadena leída al proceso correspondiente
-            write(STDOUT_FILENO, cadenaLeida, sizeof(cadenaLeida));
-            //printf("Cadena enviada al proceso hijo\n");
-
-
-
-            ///////////////////////////////////////////////
-
-            
-
-
-            //break;//BORRAR DESPUES ESTE BREAK
-            ciclos=ciclos+1;//////////////////////////BORRAR
-            printf("CICLOS = %d\n",ciclos);
-
-        }//fin while feof(archivo) == 0)
-
-    }//fin if proceso padre
 
 
 
@@ -377,18 +386,6 @@ int main(int argc, char* argv[]){
 
 /////////////////proceso hijo
 if(pid == 0){
-    
-    sleep(0.5);
-    int numeroProceso = cantidadProcesosCreados;
-    char numeroProcesoChar[2];
-    sprintf(numeroProcesoChar,"%d",numeroProceso);
-    //itoa(numeroProceso,numeroProcesoChar,10);
-    printf("el numero de proceso %d luego del itoa quedó como %s\n",numeroProceso,numeroProcesoChar);
-    dup2(matrizPipes[(numeroProceso * 2) - 2][LECTURA], STDIN_FILENO);
-    printf("Soy el proceso hijo y ahora voy a entrar a vis.c\n");
-    execl("./vis","./vis",numeroProcesoChar,(char*)NULL);
-
-/*    
 
     int i =0;//borrar
 
@@ -452,15 +449,22 @@ if(pid == 0){
     execl("./vis","./vis",(char*)NULL);
     printf("Si esto se ve en el proceso hijo %d hay algo malo\n",numeroProceso);
 
-
-*/
-
 }//fin if proceso hijo
 
 
 
 
 
+
+
+
+
+    //printf("Yo como proceso padre sigo vivo porsiaca\n");
+    
+    //char str1[300] = "hola";
+    //char str2[300] = "como estais";
+    //strcat(str1,str2);
+    //printf("El resultado de la concatenación de %s con %s es: %s y el largo de str1 es %d\n",str1,str2,str1,sizeof(str1));
 
 //En caso de estar en el proceso padre
 if(pid > 0){
