@@ -18,6 +18,7 @@
 #define INFINITO 9999999
 #define DECIMAL 0.0001
 #define LIMITE_CADENA 300
+#define CANTIDAD_PARAMETROS 5 
 
 
 
@@ -159,10 +160,10 @@ while((cantidadProcesosCreados < cantidadProcesosHijos) && (pid > 0)){
         printf("Soy el proceso padre y mi variable pid es %d y mi pid como padre es %d\n", pid, getpid());//Borrar
 
         //se cierra la lectura en el pipe que el padre escribe para el proceso hijo correspondiente
-        //close(matrizPipes[(cantidadProcesosCreados*2) - 2][LECTURA]);
+        close(matrizPipes[(cantidadProcesosCreados*2) - 2][LECTURA]);
 
         //Se cierra la escritura en el pipe que el padre lee lo enviado por el proceso hijo
-        //close(matrizPipes[(cantidadProcesosCreados*2) - 1][ESCRITURA]);
+        close(matrizPipes[(cantidadProcesosCreados*2) - 1][ESCRITURA]);
 
 
     }//fin if pid > 0
@@ -173,10 +174,10 @@ while((cantidadProcesosCreados < cantidadProcesosHijos) && (pid > 0)){
         printf("soy el proceso hijo y mi variable pid es %d y mi pid es %d\n", pid, getpid());//borrar
 
         //se cierra la escritura en el pipe que el hijo lee lo enviado por el padre
-        //close(matrizPipes[(cantidadProcesosCreados*2) - 2][ESCRITURA]);
+        close(matrizPipes[(cantidadProcesosCreados*2) - 2][ESCRITURA]);
 
         //Se cierra la lectura en el pipe que el hijo le escribe al proceso padre
-        //close(matrizPipes[(cantidadProcesosCreados*2) - 1][LECTURA]);
+        close(matrizPipes[(cantidadProcesosCreados*2) - 1][LECTURA]);
         
 
     }//fin if pid == 0
@@ -271,7 +272,7 @@ char copiaCadenaLeida[LIMITE_CADENA];
 //Se procederá a leer las visibilidades del archivo y luego de acuerdo a su distancia respecto del origen
 //se verá a que proceso hijo corresponde enviar la visibilidad leída
 
-
+float* listakla;//BORRAR, se va a procesar en otro lao
 
 
 
@@ -282,12 +283,25 @@ if(pid > 0){
     int ciclos = 0;//BORRAR
     int procesoElegido;
 
+
+
     //mientras no se llegue al final del documento
     while(feof(archivo) == 0 || (ciclos < 51)){//BORRAR LOS CICLOS
 
 
         //se lee la linea completa con un limite de 300 y se transforma a cadena de caracteres
         fgets(cadenaLeida,LIMITE_CADENA,archivo);
+
+/*BOOORRAAARRRR
+        printf("Atento soy el padre y recibi la siguiente cadena:%s\n", cadenaLeida);
+        float* listakla;
+        listakla = cadenaAFlotantes(cadenaLeida);
+        printf("SALI DE LA FUNCION DE LOS FLOTANTES y los valores son, %f,%f,%f,%f,%fKKKK\n"
+            ,listakla[0],listakla[1],listakla[2],listakla[3],listakla[4]);
+
+BORRARRRRRRRRRRRRRR */
+
+
 
         //Para manipular la cadena leída, se pretende realizar split con la funcion strtok
         //pero esta funcion modifica el arreglo, por lo que para evitar problemas se hará una copia del arreglo
@@ -376,6 +390,30 @@ if(pid > 0){
 
         i = i+1;
     }//fin while
+
+
+
+    //Una vez escrito el mensaje de fin a todos los procesos hijos,
+    //Se proceden a cerrar los pipes donde el padre escribe y el proceso hijo lee.
+    i = 1;
+
+    //mientras queden pipes por borrar donde el proceso padre escribe
+    while(i <= cantidadDiscos){
+
+        //se cierra el pipe
+        close(matrizPipes[(i*2) - 2][ESCRITURA]);
+
+        i = i+1;
+    }//fin while
+
+
+ 
+    
+    //dup2(matrizPipes[(1 * 2)-1][LECTURA],STDIN_FILENO);
+    //dup2(matrizPipes[(1 * 2)-1][ESCRITURA],STDOUT_FILENO);
+    //char kkk[300];
+    //read(STDIN_FILENO,kkk,sizeof(kkk));
+    //close(matrizPipes[(1 * 2)-1][LECTURA]);
 
 
     sleep(0.2);//BORRAR ?)
@@ -524,9 +562,10 @@ if(pid > 0){
 
 
 
-
-
+    
+    
     printf("FINAAAAAAAAAAAAAAALLLLLLLLLLsoy el padre y voy a retornar\n");
     //wait(NULL);
+    free(listakla);
 	return(0);
 }//fin main
