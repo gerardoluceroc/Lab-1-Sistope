@@ -184,6 +184,7 @@ while((cantidadProcesosCreados < cantidadProcesosHijos) && (pid > 0)){
 
     else{
         printf("Error al crear el proceso hijo\n");
+        return(0);
     }
 
 
@@ -207,6 +208,7 @@ float matrizRango[cantidadDiscos][2];
 
 //En caso de estar en el proceso padre
 if(pid > 0){
+
     //se abre el archivo de entrada en modo lectura para extraer las visibilidades
     archivo = fopen(nombreArchivoEntrada,"r");
 
@@ -272,9 +274,6 @@ char copiaCadenaLeida[LIMITE_CADENA];
 //Se procederá a leer las visibilidades del archivo y luego de acuerdo a su distancia respecto del origen
 //se verá a que proceso hijo corresponde enviar la visibilidad leída
 
-float* listakla;//BORRAR, se va a procesar en otro lao
-
-
 
 
 //Si estoy en el proceso padre
@@ -282,8 +281,6 @@ if(pid > 0){
 
     int ciclos = 0;//BORRAR
     int procesoElegido;
-
-
 
     //mientras no se llegue al final del documento
     while(feof(archivo) == 0 || (ciclos < 51)){//BORRAR LOS CICLOS
@@ -375,7 +372,6 @@ BORRARRRRRRRRRRRRRR */
     }//fin while feof(archivo) == 0)
 
     //Se procede a enviar a los procesos hijos el string de "FIN" para indicar que dejen de leer
-    
 
     i = 1;
 
@@ -392,7 +388,6 @@ BORRARRRRRRRRRRRRRR */
     }//fin while
 
 
-
     //Una vez escrito el mensaje de fin a todos los procesos hijos,
     //Se proceden a cerrar los pipes donde el padre escribe y el proceso hijo lee.
     i = 1;
@@ -402,12 +397,41 @@ BORRARRRRRRRRRRRRRR */
 
         //se cierra el pipe
         close(matrizPipes[(i*2) - 2][ESCRITURA]);
+        //close(STDOUT_FILENO);//   borrar
 
         i = i+1;
     }//fin while
 
+/*
 
- 
+    //se hace copia del pipe donde el proceso hijo escribe y el padre lee
+    i = 1;
+    float* propiedadesDisco = (float*)malloc(sizeof(float)*CANTIDAD_PARAMETROS);
+
+    //mientras se lee la información enviada por el proceso hijo
+    while(i<=cantidadPipes){
+
+        dup2(matrizPipes[(i*2)-1][LECTURA], STDIN_FILENO);
+
+        //se lee el array enviado por el proceso hijo
+        read(STDIN_FILENO, propiedadesDisco, sizeof(propiedadesDisco));
+
+        //BORRARRRR
+        //FILE* archivoSalida = fopen(nombreArchivoSalida,"w");
+        //fprintf(archivoSalida, "HOla estoy escribiendo en un archivo y la media real es%f\n",propiedadesDisco[1]);
+        //fclose(archivoSalida);
+
+
+
+        //Se cierra el pipe
+        close(matrizPipes[(i*2)-1][LECTURA]);
+        //close(STDOUT_FILENO);
+        //close(STDIN_FILENO);
+
+        i = i+1;
+    }//fin mientras se lee la información enviada por el proceso hijo
+
+ */
     
     //dup2(matrizPipes[(1 * 2)-1][LECTURA],STDIN_FILENO);
     //dup2(matrizPipes[(1 * 2)-1][ESCRITURA],STDOUT_FILENO);
@@ -565,7 +589,12 @@ if(pid > 0){
     
     
     printf("FINAAAAAAAAAAAAAAALLLLLLLLLLsoy el padre y voy a retornar\n");
-    //wait(NULL);
-    free(listakla);
+    write(1,"HOLAAA\n",sizeof("HOLAAA\n"));
+    //FILE* archivoSalida = fopen(nombreArchivoSalida,"w");
+    //fprintf(archivoSalida, "HOla estoy escribiendo en un archivo\n");
+    //fclose(archivoSalida);
+
+
+    wait(NULL);
 	return(0);
 }//fin main

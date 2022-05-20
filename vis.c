@@ -47,9 +47,13 @@ int main(int argc, char* argv[]){
 		//Se lee lo enviado por el proceso padre
 		read(STDIN_FILENO, buffer, sizeof(buffer));
 
+
 		//Si lo enviado es "FIN"
-		if(buffer == "FIN"){
+		if(strcmp(buffer,"FIN") == 0){
+
 			//se detiene el ciclo y se deja de leer
+			printf("ACABO DE LEER UN FIN ASI K PARO EL CICLO\n");
+			//close(STDIN_FILENO);
 			break;
 		}
 
@@ -57,7 +61,7 @@ int main(int argc, char* argv[]){
 
 			if(strlen(buffer) > 0){
 
-				//Se aumenta el contador de la cantidad de visibilidades a procesar
+/*				//Se aumenta el contador de la cantidad de visibilidades a procesar
 				cantidadVisibilidades = cantidadVisibilidades+1;
 
 				//Se obtienen los datos de la cadena recibida
@@ -78,7 +82,8 @@ int main(int argc, char* argv[]){
 				datosValorImaginario[cantidadVisibilidades-1] = datosVisibilidad[VALOR_IM];
 				datosRuido[cantidadVisibilidades-1] = datosVisibilidad[RUIDO];
 
-				//printf("estoy en el proceso hijo %d y los valores de las observaciones son:\nposicion u:%f\nposicion v:%f\n valor real:%f\nvalor im:%f\nruido:%f\n",numeroProcesoHijo,datosPosicionU[cantidadVisibilidades-1],datosPosicionV[cantidadVisibilidades-1],datosValorReal[cantidadVisibilidades-1],datosValorImaginario[cantidadVisibilidades-1],datosRuido[cantidadVisibilidades-1]);
+*/
+				printf("estoy en el proceso hijo %d y los valores de las observaciones son:\nposicion u:%f\nposicion v:%f\n valor real:%f\nvalor im:%f\nruido:%f\nY LA CADENA ES %s\n",numeroProcesoHijo,datosPosicionU[cantidadVisibilidades-1],datosPosicionV[cantidadVisibilidades-1],datosValorReal[cantidadVisibilidades-1],datosValorImaginario[cantidadVisibilidades-1],datosRuido[cantidadVisibilidades-1],buffer);
 
 			}//fin if buffer > 0
 
@@ -90,7 +95,7 @@ int main(int argc, char* argv[]){
 	}//fin while
 
 	//Se cierra la lectura del pipe
-	close(STDIN_FILENO);
+	//close(STDIN_FILENO);
 
 
 
@@ -108,34 +113,29 @@ int main(int argc, char* argv[]){
     propiedadesDisco[3] = ruidoTotal;
 
 
+    //BORRAARRRRRR
+    FILE* archivoSalida = fopen("salida1.txt","w");
+    fprintf(archivoSalida, "HOla estoy escribiendo en un archivo y la media real es%f\n",propiedadesDisco[0]);
+    fclose(archivoSalida);
+//////////////////////////////////////
+
+
+    //Se envían las propiedades del disco
+    write(STDOUT_FILENO, propiedadesDisco, sizeof(propiedadesDisco));
+
+    //se cierra el pipe
+    close(STDOUT_FILENO);
+
+
 
 
     //sleep(7);
 	//close(STDIN_FILENO);
 	//close(STDOUT_FILENO);
 	printf("LA cantidad de visibilidades recibidas por el proceso %d es %d\n",numeroProcesoHijo,cantidadVisibilidades);
-	//write(STDOUT_FILENO,"WENA COMPI TERMINÉ\n",sizeof("WENA COMPI TERMINÉ\n"));
+
 
 	
-
-
-
-
-
-/*
-	printf("WENA MANOLO estoy en kkexeprueba.c y toi hablandooooooo\n");
-
-	char* mensaje = "Este mensaje viene de kkexeprueba y eso xao\n";
-	
-	//se manda el mensaje al padre original de toa la wea
-	write(STDOUT_FILENO, "Este mensaje viene de kkexeprueba y eso xao\n",45);
-
-	//write(STDOUT_FILENO, mensaje,sizeof(mensaje));
-
-	//write(STDOUT_FILENO, "Este mensaje viene de kkexeprueba y eso xao\n",strlen("Este mensaje viene de kkexeprueba y eso xao\n"));
-
-*/
-
 
 
 
